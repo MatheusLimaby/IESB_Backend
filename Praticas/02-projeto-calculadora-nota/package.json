@@ -1,16 +1,16 @@
 {
-  "name": "calculadora",
+  "name": "02-projeto-calculadora-nota",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "jest"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
-  "devDependencies": {
-    "jest": "^30.1.1"
+  "dependencies": {
+    "prompt-sync": "^4.2.0"
   }
 }
