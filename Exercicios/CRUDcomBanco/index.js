@@ -1,81 +1,98 @@
-const express = require('express')
-const mongoose = require('mongoose')
-const dotenv = require('dotenv').config()
+const express = require('express');
+const mongoose = require('mongoose');
+const dotenv = require('dotenv').config();
 
-const app = express()
+const app = express();
+app.use(express.json());
 
-app.use(express.json())
+// Conectar ao banco Mongo
+const DB_HOST = process.env.DB_HOST;
+const DB_USER = process.env.DB_USER;
+const DB_PASS = process.env.DB_PASS;
+const DB_NAME = process.env.DB_NAME;
 
-// Connetar no banco Mongo
-const DB_HOST = process.env.DB_HOST
-const DB_USER = process.env.DB_USER
-const DB_PASS = process.env.DB_PASS
-const DB_NAME = process.env.DB_NAME
-
-const url = `mongodb+srv://${DB_USER}:${DB_PASS}@${DB_HOST}/${DB_NAME}?retryWrites=true&w=majority&appName=Cluster0`
+const url = `mongodb+srv://${DB_USER}:${DB_PASS}@${DB_HOST}/${DB_NAME}?retryWrites=true&w=majority&appName=Cluster0`;
 
 mongoose.connect(url)
   .then(() => {
-    console.log("Conectado ao MongoDB")
+    console.log("Conectado ao MongoDB");
   })
   .catch(err => {
-    console.log("Erro ao conectar no banco MongoDB: ", err)
-  })
+    console.error("Erro ao conectar no banco MongoDB:", err);
+  });
 
-// Interface com o banco de dados - Model
-// Cada model(Modelo) representa uma Collection(Tabela)
-const LivroModel = mongoose.model('Livros', new mongoose.Schema(
-  {
-    titulo: String,
-    autor: String,
-    editora: String,
-    ano: Number,
-    preco: Number
-  }
-))
-
-// CRUD
+// Model
+const LivroModel = mongoose.model('Livros', new mongoose.Schema({
+  titulo: { type: String, required: true },
+  autor: String,
+  editora: String,
+  ano: Number,
+  preco: Number
+}));
 
 // Create
-app.post('/livros', async (req, res, next) => {
-  const livro = req.body
-  if (!tarefa.nome) {
-    return res.status(400).json({ erro: "O campo nome é obrigatório!!!" })
+app.post('/livros', async (req, res) => {
+  const livro = req.body;
+  if (!livro.titulo) {
+    return res.status(400).json({ erro: "O campo 'titulo' é obrigatório!" });
   }
-  const tarefaCriada = await TarefaModel.create(tarefa)
-  res.status(201).json(tarefaCriada)
-})
+  try {
+    const livroCriado = await LivroModel.create(livro);
+    res.status(201).json(livroCriado);
+  } catch (err) {
+    res.status(500).json({ erro: "Erro ao criar livro", detalhes: err.message });
+  }
+});
 
-// READ
-app.get('/livros', async (req, res, next) => {
-  const livros = await TarefaModel.find()
-  res.json(tarefas)
-})
+// Read
+app.get('/livros', async (req, res) => {
+  try {
+    const livros = await LivroModel.find();
+    res.json(livros);
+  } catch (err) {
+    res.status(500).json({ erro: "Erro ao buscar livros", detalhes: err.message });
+  }
+});
 
-// UPDATE
-app.put('/livros/:id', async (req, res, next) => {
-  const id = req.params.id
-  const livro = req.body
+// Update
+app.put('/livros/:id', async (req, res) => {
+  const id = req.params.id;
+  const livro = req.body;
+
   if (!livro.titulo || !livro.autor || !livro.editora || !livro.ano || !livro.preco) {
-    return res.status(400).json({ erro: "O campo nome é obrigatório!!!" })
+    return res.status(400).json({ erro: "Todos os campos são obrigatórios: titulo, autor, editora, ano, preco" });
   }
 
-  const livroAtualizado = await livroModel.findByIdAndUpdate(id, livro, { new: true })
+  try {
+    const livroAtualizado = await LivroModel.findByIdAndUpdate(id, livro, { new: true });
 
-  if (!livroAtualizado) {
-    return res.status(404).json({ erro: "livro não encontrado!!!" })
+    if (!livroAtualizado) {
+      return res.status(404).json({ erro: "Livro não encontrado!" });
+    }
+
+    res.json(livroAtualizado);
+  } catch (err) {
+    res.status(500).json({ erro: "Erro ao atualizar livro", detalhes: err.message });
   }
-  res.json(livroAtualizado)
-})
+});
 
-// DELETE
-app.delete('/livros/:id', async (req, res, next) => {
-  const id = req.params.id
-  await livroModel.findByIdAndDelete(id)
-  res.json({ mensagem: "livro excluido!!!" })
-})
+// Delete
+app.delete('/livros/:id', async (req, res) => {
+  const id = req.params.id;
+  try {
+    const livroDeletado = await LivroModel.findByIdAndDelete(id);
 
-// start
+    if (!livroDeletado) {
+      return res.status(404).json({ erro: "Livro não encontrado!" });
+    }
+
+    res.json({ mensagem: "Livro excluído com sucesso!" });
+  } catch (err) {
+    res.status(500).json({ erro: "Erro ao excluir livro", detalhes: err.message });
+  }
+});
+
+// Start
 app.listen(3000, () => {
-  console.log("Aplicação rodando em http://localhost:3000")
-})
+  console.log("Aplicação rodando em http://localhost:3000");
+});
