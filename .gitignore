@@ -273,10 +273,15 @@ gradle-app.setting
 .history
 .ionide
 
+<<<<<<< HEAD
 # dotenv evironment variable files
 .env.local
 .env
 .env.production.local
 .env.test.local.env.development.local
 
+=======
+
+.env
+>>>>>>> 43ff029b1f4e43ac725549e20b8ca6280b6a983f
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,reactnative
